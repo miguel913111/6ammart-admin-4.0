@@ -78,6 +78,9 @@ class OrderController extends Controller
             ->when($status == 'accepted', function ($query) {
                 return $query->AccepteByDeliveryman();
             })
+            ->when($status == 'confirmed', function ($query) {
+                return $query->Confirmed();
+            })
             ->when($status == 'processing', function ($query) {
                 return $query->Preparing();
             })
@@ -727,9 +730,20 @@ class OrderController extends Controller
 
             }
             $order->delivery_man_id = $delivery_man_id;
-            $order->order_status = in_array($order->order_status, ['pending', 'confirmed']) ? 'accepted' : $order->order_status;
-            $order->accepted = now();
+            if (config('order_confirmation_model') == 'deliveryman') {
+                $order->order_status = in_array($order->order_status, ['pending', 'accepted']) ? 'confirmed' : $order->order_status;
+                $order->confirmed = now();
+            } else {
+                $order->order_status = in_array($order->order_status, ['pending', 'confirmed']) ? 'accepted' : $order->order_status;
+                $order->accepted = now();
+            }
             $order->save();
+
+            try {
+                Helpers::send_order_notification($order);
+            } catch (\Exception $e) {
+                info($e->getMessage());
+            }
 
             $deliveryman->current_orders = $deliveryman->current_orders + 1;
             $deliveryman->save();

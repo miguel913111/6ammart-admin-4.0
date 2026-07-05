@@ -280,6 +280,11 @@ class Order extends Model
         return $query->where('order_status', 'accepted');
     }
 
+    public function scopeConfirmed($query)
+    {
+        return $query->where('order_status', 'confirmed');
+    }
+
     public function scopePreparing($query)
     {
         return $query->whereIn('order_status', ['confirmed', 'processing', 'handover']);

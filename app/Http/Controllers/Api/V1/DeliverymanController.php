@@ -587,17 +587,52 @@ class DeliverymanController extends Controller
             ], 405);
         }
 
-        if ($order->order_type == 'parcel' && $order->order_status == 'confirmed') {
-            $order->order_status = 'handover';
-            $order->handover = now();
-            $order->processing = now();
-        } else {
-            $order->order_status = in_array($order->order_status, ['pending', 'confirmed']) ? 'accepted' : $order->order_status;
+        // Atomic accept: lock the row so concurrent requests cannot assign
+        // the same order to multiple deliverymen.
+        $order = DB::transaction(function () use ($request, $dm, $order) {
+            $lockedOrder = Order::where('id', $request['order_id'])
+                ->whereNull('delivery_man_id')
+                ->dmOrder()
+                ->lockForUpdate()
+                ->first();
+
+            if (!$lockedOrder) {
+                return null;
+            }
+
+            if ($lockedOrder->order_type == 'parcel' && $lockedOrder->order_status == 'confirmed') {
+                $lockedOrder->order_status = 'handover';
+                $lockedOrder->handover = now();
+                $lockedOrder->processing = now();
+            } else {
+                if (config('order_confirmation_model') == 'deliveryman') {
+                    $lockedOrder->order_status = in_array($lockedOrder->order_status, ['pending', 'confirmed']) ? 'confirmed' : $lockedOrder->order_status;
+                    $lockedOrder->confirmed = now();
+                } else {
+                    $lockedOrder->order_status = in_array($lockedOrder->order_status, ['pending', 'confirmed']) ? 'accepted' : $lockedOrder->order_status;
+                }
+            }
+
+            $lockedOrder->delivery_man_id = $dm->id;
+            $lockedOrder->accepted = now();
+            $lockedOrder->save();
+
+            return $lockedOrder;
+        });
+
+        if (!$order) {
+            return response()->json([
+                'errors' => [
+                    ['code' => 'order', 'message' => translate('messages.can_not_accept')],
+                ],
+            ], 404);
         }
 
-        $order->delivery_man_id = $dm->id;
-        $order->accepted = now();
-        $order->save();
+        try {
+            Helpers::send_order_notification($order);
+        } catch (\Exception $e) {
+            info($e->getMessage());
+        }
 
         $dm->current_orders = $dm->current_orders + 1;
         $dm->save();

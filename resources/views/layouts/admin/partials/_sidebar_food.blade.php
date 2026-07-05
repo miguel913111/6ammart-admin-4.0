@@ -131,6 +131,30 @@
                                     </span>
                                 </a>
                             </li>
+                            <li class="nav-item {{ Request::is('admin/order/list/confirmed') ? 'active' : '' }}">
+                                <a class="nav-link " href="{{ route('admin.order.list', ['confirmed']) }}" title="{{ translate('messages.confirmed_orders') }}">
+                                    <span class="tio-circle nav-indicator-icon"></span>
+                                    <span class="text-truncate sidebar--badge-container">
+                                        {{ translate('messages.confirmed') }}
+                                        <span class="badge badge-soft-info badge-pill ml-1">
+                                            {{ \App\Models\Order::Confirmed()->OrderScheduledIn(30)->StoreOrder()->count() }}
+                                        </span>
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ Request::is('admin/order/list/confirmed') ? 'active' : '' }}">
+                                <a class="nav-link " href="{{ route('admin.order.list', ['confirmed']) }}" title="{{ translate('messages.confirmed_orders') }}">
+                                    <span class="tio-circle nav-indicator-icon"></span>
+                                    <span class="text-truncate sidebar--badge-container">
+                                        {{ translate('messages.confirmed') }}
+                                        <span class="badge badge-soft-info badge-pill ml-1">
+                                            {{ \App\Models\Order::Confirmed()->OrderScheduledIn(30)->StoreOrder()->count() }}
+                                        </span>
+                                    </span>
+                                </a>
+                            </li>
+
+
                             <li class="nav-item {{ Request::is('admin/order/list/processing') ? 'active' : '' }}">
                                 <a class="nav-link " href="{{ route('admin.order.list', ['processing']) }}" title="{{ translate('messages.processing_orders') }}">
                                     <span class="tio-circle nav-indicator-icon"></span>

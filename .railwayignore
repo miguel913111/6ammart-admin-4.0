@@ -1,0 +1,22 @@
+node_modules
+vendor
+.git
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/tmp/*
+bootstrap/cache/*.tmp
+.env
+.env.backup
+.phpunit.result.cache
+npm-debug.log
+yarn-error.log
+error_log
+.DS_Store
+.idea/
+.vscode/
+releases/
+Documentation/
+Admin panel new install.zip
+installation/backup/*.sql

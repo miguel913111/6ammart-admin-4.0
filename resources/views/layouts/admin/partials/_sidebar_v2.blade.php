@@ -28,6 +28,7 @@
         $count_scheduled = 0;
         $count_pending   = Order::Pending()->OrderScheduledIn(30)->ParcelOrder()->module($current_module_id)->count();
         $count_accepted  = Order::AccepteByDeliveryman()->OrderScheduledIn(30)->ParcelOrder()->module($current_module_id)->count();
+        $count_confirmed = Order::Confirmed()->OrderScheduledIn(30)->ParcelOrder()->module($current_module_id)->count();
         $count_processing= Order::Preparing()->OrderScheduledIn(30)->ParcelOrder()->module($current_module_id)->count();
         $count_otw       = Order::ItemOnTheWay()->OrderScheduledIn(30)->ParcelOrder()->module($current_module_id)->count();
         $count_delivered = Order::Delivered()->ParcelOrder()->module($current_module_id)->count();
@@ -43,6 +44,7 @@
         $count_scheduled = Order::Scheduled()->StoreOrder()->module($current_module_id)->count();
         $count_pending   = Order::Pending()->OrderScheduledIn(30)->StoreOrder()->module($current_module_id)->count();
         $count_accepted  = Order::AccepteByDeliveryman()->OrderScheduledIn(30)->StoreOrder()->module($current_module_id)->count();
+        $count_confirmed = Order::Confirmed()->OrderScheduledIn(30)->StoreOrder()->module($current_module_id)->count();
         $count_processing= Order::Preparing()->OrderScheduledIn(30)->StoreOrder()->module($current_module_id)->count();
         $count_otw       = Order::ItemOnTheWay()->OrderScheduledIn(30)->StoreOrder()->module($current_module_id)->count();
         $count_delivered = Order::Delivered()->StoreOrder()->module($current_module_id)->count();
@@ -190,6 +192,7 @@
                                     ['key' => 'or-all',  'route' => route('admin.parcel.orders', ['all']),              'label' => translate('messages.all'),             'pat' => 'admin/parcel/orders/all',        'count' => $count_all,       'dot' => 'blue'],
                                     ['key' => 'or-pen',  'route' => route('admin.parcel.orders', ['pending']),          'label' => translate('messages.pending'),         'pat' => 'admin/parcel/orders/pending',    'count' => $count_pending,   'dot' => 'amber'],
                                     ['key' => 'or-acc',  'route' => route('admin.parcel.orders', ['accepted']),         'label' => translate('messages.accepted'),        'pat' => 'admin/parcel/orders/accepted',   'count' => $count_accepted,  'dot' => 'blue'],
+                                    ['key' => 'or-cnf',  'route' => route('admin.parcel.orders', ['confirmed']),        'label' => translate('messages.confirmed'),       'pat' => 'admin/parcel/orders/confirmed',  'count' => $count_confirmed, 'dot' => 'info'],
                                     ['key' => 'or-prc',  'route' => route('admin.parcel.orders', ['processing']),       'label' => translate('messages.processing'),      'pat' => 'admin/parcel/orders/processing', 'count' => $count_processing,'dot' => 'violet'],
                                     ['key' => 'or-otw',  'route' => route('admin.parcel.orders', ['item_on_the_way']),  'label' => translate('messages.order_on_the_way'),'pat' => 'admin/parcel/orders/item_on_the_way', 'count' => $count_otw, 'dot' => 'amber'],
                                     ['key' => 'or-del',  'route' => route('admin.parcel.orders', ['delivered']),        'label' => translate('messages.delivered'),       'pat' => 'admin/parcel/orders/delivered',  'count' => $count_delivered, 'dot' => 'green'],
@@ -203,6 +206,7 @@
                                     ['key' => 'or-sch',  'route' => route('admin.order.list', ['scheduled']), 'label' => translate('messages.scheduled'),       'pat' => 'admin/order/list/scheduled',  'count' => $count_scheduled, 'dot' => 'violet'],
                                     ['key' => 'or-pen',  'route' => route('admin.order.list', ['pending']),   'label' => translate('messages.pending'),         'pat' => 'admin/order/list/pending',    'count' => $count_pending,   'dot' => 'amber'],
                                     ['key' => 'or-acc',  'route' => route('admin.order.list', ['accepted']),  'label' => translate('messages.accepted'),        'pat' => 'admin/order/list/accepted',   'count' => $count_accepted,  'dot' => 'blue'],
+                                    ['key' => 'or-cnf',  'route' => route('admin.order.list', ['confirmed']),'label' => translate('messages.confirmed'),       'pat' => 'admin/order/list/confirmed',  'count' => $count_confirmed, 'dot' => 'info'],
                                     ['key' => 'or-prc',  'route' => route('admin.order.list', ['processing']),'label' => translate('messages.processing'),      'pat' => 'admin/order/list/processing', 'count' => $count_processing,'dot' => 'violet'],
                                     ['key' => 'or-otw',  'route' => route('admin.order.list', ['item_on_the_way']), 'label' => translate('messages.order_on_the_way'), 'pat' => 'admin/order/list/item_on_the_way', 'count' => $count_otw, 'dot' => 'amber'],
                                     ['key' => 'or-del',  'route' => route('admin.order.list', ['delivered']), 'label' => translate('messages.delivered'),       'pat' => 'admin/order/list/delivered',  'count' => $count_delivered, 'dot' => 'green'],
