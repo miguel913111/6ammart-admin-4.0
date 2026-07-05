@@ -7,28 +7,6 @@ define('LARAVEL_START', microtime(true));
 
 /*
 |--------------------------------------------------------------------------
-| Serve Legacy /public/assets/* Requests
-|--------------------------------------------------------------------------
-|
-| Many views hard-code asset paths as /public/assets/... Serve them from
-| the actual public/assets directory without bootstrapping the framework.
-|
-*/
-
-$uri = $_SERVER['REQUEST_URI'] ?? '';
-if (str_starts_with($uri, '/public/assets/')) {
-    $relative = parse_url($uri, PHP_URL_PATH);
-    $path = __DIR__ . '/assets/' . substr($relative, strlen('/public/assets/'));
-    if (file_exists($path) && is_file($path)) {
-        $mimeType = mime_content_type($path) ?: 'application/octet-stream';
-        header('Content-Type: ' . $mimeType);
-        readfile($path);
-        exit;
-    }
-}
-
-/*
-|--------------------------------------------------------------------------
 | Check If The Application Is Under Maintenance
 |--------------------------------------------------------------------------
 |

@@ -11,6 +11,17 @@ $uri = urldecode(
     parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
 );
 
+// Serve legacy hard-coded /public/assets/* paths from the real assets dir.
+if (str_starts_with($uri, '/public/assets/')) {
+    $assetPath = __DIR__.'/public/assets/'.substr($uri, strlen('/public/assets/'));
+    if (file_exists($assetPath) && ! is_dir($assetPath)) {
+        $mimeType = mime_content_type($assetPath) ?: 'application/octet-stream';
+        header('Content-Type: '.$mimeType);
+        readfile($assetPath);
+        return true;
+    }
+}
+
 // This file allows us to emulate Apache's "mod_rewrite" functionality from the
 // built-in PHP web server. This provides a convenient way to test a Laravel
 // application without having installed a "real" web server software here.
