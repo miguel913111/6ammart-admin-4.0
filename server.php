@@ -11,11 +11,28 @@ $uri = urldecode(
     parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
 );
 
+$mimeTypes = [
+    'css' => 'text/css',
+    'js' => 'application/javascript',
+    'png' => 'image/png',
+    'jpg' => 'image/jpeg',
+    'jpeg' => 'image/jpeg',
+    'svg' => 'image/svg+xml',
+    'gif' => 'image/gif',
+    'ico' => 'image/x-icon',
+    'woff' => 'font/woff',
+    'woff2' => 'font/woff2',
+    'ttf' => 'font/ttf',
+    'eot' => 'application/vnd.ms-fontobject',
+    'otf' => 'font/otf',
+];
+
 // Serve legacy hard-coded /public/assets/* paths from the real assets dir.
 if (str_starts_with($uri, '/public/assets/')) {
     $assetPath = __DIR__.'/public/assets/'.substr($uri, strlen('/public/assets/'));
     if (file_exists($assetPath) && ! is_dir($assetPath)) {
-        $mimeType = mime_content_type($assetPath) ?: 'application/octet-stream';
+        $ext = strtolower(pathinfo($assetPath, PATHINFO_EXTENSION));
+        $mimeType = $mimeTypes[$ext] ?? (mime_content_type($assetPath) ?: 'application/octet-stream');
         header('Content-Type: '.$mimeType);
         readfile($assetPath);
         return true;
