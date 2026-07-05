@@ -10,8 +10,10 @@
     "require": {
         "php": "^8.2|^8.3|^8.4",
         "ext-curl": "*",
+        "ext-gd": "*",
         "ext-json": "*",
         "ext-simplexml": "*",
+        "ext-zip": "*",
         "barryvdh/laravel-dompdf": "^3.1",
         "brian2694/laravel-toastr": "^5.54",
         "doctrine/dbal": "^4.3",
