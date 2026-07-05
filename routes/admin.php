@@ -599,6 +599,11 @@ Route::group(['namespace' => 'Admin', 'as' => 'admin.'], function () {
             Route::delete('automated-message/destroy/{id}', 'AutomatedMessageController@destroy')->name('automated_message.destroy');
             Route::get('automated-message/edit/{id}', 'AutomatedMessageController@edit')->name('automated_message.edit');
 
+            Route::post('home-footer/store', 'HomeFooterSuggestionController@store')->name('home_footer.store');
+            Route::put('home-footer/update/{id}', 'HomeFooterSuggestionController@update')->name('home_footer.update');
+            Route::get('home-footer/status/{id}/{status}', 'HomeFooterSuggestionController@status')->name('home_footer.status');
+            Route::delete('home-footer/destroy/{id}', 'HomeFooterSuggestionController@destroy')->name('home_footer.destroy');
+
             Route::group(['namespace' => 'System', 'prefix' => 'system-addon', 'as' => 'system-addon.', 'middleware' => ['module:user_management']], function () {
                 Route::get('/', 'AddonController@index')->name('index');
                 Route::post('publish', 'AddonController@publish')->name('publish');

@@ -36,6 +36,9 @@
                 <li class="nav-item">
                     <a class="nav-link {{ Request::is('admin/business-settings/business-setup/automated-message') ?'active':'' }}" href="{{ route('admin.business-settings.business-setup',  ['tab' => 'automated-message']) }}"  aria-disabled="true">{{translate('Automated Message')}}</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ Request::is('admin/business-settings/business-setup/home-footer') ?'active':'' }}" href="{{ route('admin.business-settings.business-setup',  ['tab' => 'home-footer']) }}"  aria-disabled="true">{{translate('Home Footer')}}</a>
+                </li>
             </ul>
             <!-- End Nav -->
              <div class="arrow-area">

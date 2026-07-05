@@ -186,6 +186,9 @@ class BusinessSettingsController extends Controller
                 compact('messages', 'language')
             );
 
+        case 'home-footer':
+            return app(HomeFooterSuggestionController::class)->index($request);
+
         default:
             abort(404);
     }

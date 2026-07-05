@@ -17,7 +17,7 @@ class ModuleCheckMiddleware
     public function handle($request, Closure $next)
     {
         $except = [
-            'api/v1/customer*', 'api/v1/banners', 'api/v1/stores/get-stores/*', 'api/v1/coupon/list', 'api/v1/categories', 'api/v1/items/reviews/submit', 'api/v1/delivery-man/reviews/submit'
+            'api/v1/customer*', 'api/v1/banners', 'api/v1/stores/get-stores/*', 'api/v1/coupon/list', 'api/v1/categories', 'api/v1/items/reviews/submit', 'api/v1/delivery-man/reviews/submit', 'api/v1/home-footer-suggestions'
         ];
 
         foreach ($except as $except) {

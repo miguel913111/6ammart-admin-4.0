@@ -562,6 +562,10 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
             Route::get('why-choose', 'OtherBannerController@get_why_choose');
         });
 
+        Route::group(['prefix' => 'home-footer-suggestions'], function () {
+            Route::get('/', 'HomeFooterSuggestionController@getSuggestions');
+        });
+
         Route::group(['prefix' => 'categories'], function () {
             Route::get('/', 'CategoryController@get_categories');
             Route::get('childes/{category_id}', 'CategoryController@get_childes');
