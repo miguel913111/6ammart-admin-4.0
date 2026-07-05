@@ -56,7 +56,7 @@ class ConfigController extends Controller
             'app_url_ios_rider','schedule_order','order_delivery_verification','show_dm_earning','canceled_by_deliveryman','canceled_by_store','timeformat','toggle_veg_non_veg','toggle_dm_registration',
             'toggle_store_registration','schedule_order_slot_duration','parcel_per_km_shipping_charge','parcel_minimum_shipping_charge','footer_text','loyalty_point_exchange_rate','loyalty_point_item_purchase_point',
             'loyalty_point_status','loyalty_point_minimum_point','wallet_status','dm_tips_status','ref_earning_status','ref_earning_exchange_rate','refund_active_status','refund','cancelation',
-            'shipping_policy','prescription_order_status','icon','cookies_text','home_delivery_status','takeaway_status','additional_charge','additional_charge_status','additional_charge_name',
+            'shipping_policy','prescription_order_status','icon','vendor_overlay_icon','delivery_overlay_icon','cookies_text','home_delivery_status','takeaway_status','additional_charge','additional_charge_status','additional_charge_name',
             'dm_picture_upload_status','partial_payment_status','partial_payment_method','add_fund_status','offline_payment_status','websocket_url','websocket_port','websocket_status','guest_checkout_status','disbursement_type','restaurant_disbursement_waiting_time','dm_disbursement_waiting_time','min_amount_to_pay_store','min_amount_to_pay_dm','admin_commission','new_customer_discount_status','new_customer_discount_amount','new_customer_discount_amount_type','new_customer_discount_amount_validity','new_customer_discount_validity_type','store_review_reply','subscription_business_model','commission_business_model','subscription_deadline_warning_days','subscription_deadline_warning_message','subscription_free_trial_days','subscription_free_trial_type','subscription_free_trial_status','country_picker_status','firebase_otp_verification','manual_login_status','otp_login_status','social_login_status','google_login_status','facebook_login_status','apple_login_status','email_verification_status','phone_verification_status','send_otp_via','admin_free_delivery_option','admin_free_delivery_status','free_delivery_over',
             'parcel_cancellation_status','parcel_cancellation_basic_setup','parcel_return_time_fee','openai_config','dm_loyality_point_status','dm_loyality_point_per_order',
             'dm_loyality_point_conversion_rate','dm_min_loyality_point_to_convert','dm_referal_status','dm_referal_amount','dm_referal_bonus','pro_member_status',
@@ -75,7 +75,7 @@ class ConfigController extends Controller
         $settings = Cache::rememberForever($cacheKey, function () use ($key) {
             return array_column(BusinessSetting::whereIn('key', $key)->get()->toArray(), 'value', 'key');
         });
-        $image_key = ['logo', 'icon'];
+        $image_key = ['logo', 'icon', 'vendor_overlay_icon', 'delivery_overlay_icon'];
         $data = [];
         $openAIStatus = isset($settings['openai_config']) ? json_decode($settings['openai_config'], true) : [];
         $openAIStatus = isset($openAIStatus['status']) && $openAIStatus['status'] == 1 ? 1 : 0;
@@ -222,6 +222,10 @@ class ConfigController extends Controller
             'business_name' => $settings['business_name'],
             'logo' => $settings['logo'],
             'logo_full_url' => Helpers::get_full_url('business', $settings['logo'], $data['logo_storage'] ?? 'public'),
+            'vendor_overlay_icon' => $settings['vendor_overlay_icon'] ?? null,
+            'vendor_overlay_icon_full_url' => Helpers::get_full_url('business', $settings['vendor_overlay_icon'] ?? '', $data['vendor_overlay_icon_storage'] ?? 'public'),
+            'delivery_overlay_icon' => $settings['delivery_overlay_icon'] ?? null,
+            'delivery_overlay_icon_full_url' => Helpers::get_full_url('business', $settings['delivery_overlay_icon'] ?? '', $data['delivery_overlay_icon_storage'] ?? 'public'),
             'address' => $settings['address'],
             'phone' => $settings['phone'],
             'email' => $settings['email_address'],

@@ -7477,6 +7477,8 @@ class BusinessSettingsController extends Controller
     {
         $this->updateImage('logo', $request->file('logo'));
         $this->updateImage('icon', $request->file('icon'));
+        $this->updateImage('vendor_overlay_icon', $request->file('vendor_overlay_icon'));
+        $this->updateImage('delivery_overlay_icon', $request->file('delivery_overlay_icon'));
     }
 
     private function updateImage(string $key, $file = null): void

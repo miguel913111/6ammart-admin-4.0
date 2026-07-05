@@ -199,7 +199,7 @@
                                 @php($logo = \App\Models\BusinessSetting::where('key', 'logo')->first())
 
                                 <div class="col-lg-4 shadow-sm">
-                                    <div class="d-flex flex-column gap-4 shadow-sm h--37px">
+                                    <div class="d-flex flex-column gap-4 shadow-sm">
                                         <div class="bg-light2 rounded p-20">
                                             <div class="mb-15">
                                                 <h4 class="mb-1">{{ translate('Upload Logo') }} <span class="text-danger">*</span> </h4>
@@ -235,6 +235,50 @@
                                                     'ratio' => '1:1',
                                                     'isRequired' => true,
                                                     'existingImage' => \App\CentralLogics\Helpers::get_full_url('business', $icon?->value ?? '', $icon?->storage[0]?->value ?? 'public', 'upload_image'),
+                                                    'imageExtension' => IMAGE_EXTENSION,
+                                                    'imageFormat' => IMAGE_FORMAT,
+                                                    'maxSize' => MAX_FILE_SIZE,
+                                                    'textPosition' => 'bottom',
+                                                    ])
+                                            </div>
+                                        </div>
+                                        @php($vendorOverlayIcon = \App\Models\BusinessSetting::where('key', 'vendor_overlay_icon')->first())
+                                        <div class="bg-light2 rounded p-20">
+                                            <div class="text-start">
+                                                <div class="mb-15">
+                                                    <h4 class="mb-1">{{ translate('Vendor Overlay Icon') }}</h4>
+                                                    <p class="mb-0 fs-12 gray-dark">
+                                                        {{translate('Upload icon for vendor app overlay bubble')}}
+                                                    </p>
+                                                </div>
+                                                @include('admin-views.partials._image-uploader', [
+                                                    'id' => 'vendor-overlay-icon-input',
+                                                    'name' => 'vendor_overlay_icon',
+                                                    'ratio' => '1:1',
+                                                    'isRequired' => false,
+                                                    'existingImage' => \App\CentralLogics\Helpers::get_full_url('business', $vendorOverlayIcon?->value ?? '', $vendorOverlayIcon?->storage[0]?->value ?? 'public', 'upload_image'),
+                                                    'imageExtension' => IMAGE_EXTENSION,
+                                                    'imageFormat' => IMAGE_FORMAT,
+                                                    'maxSize' => MAX_FILE_SIZE,
+                                                    'textPosition' => 'bottom',
+                                                    ])
+                                            </div>
+                                        </div>
+                                        @php($deliveryOverlayIcon = \App\Models\BusinessSetting::where('key', 'delivery_overlay_icon')->first())
+                                        <div class="bg-light2 rounded p-20">
+                                            <div class="text-start">
+                                                <div class="mb-15">
+                                                    <h4 class="mb-1">{{ translate('Delivery Overlay Icon') }}</h4>
+                                                    <p class="mb-0 fs-12 gray-dark">
+                                                        {{translate('Upload icon for delivery app overlay bubble')}}
+                                                    </p>
+                                                </div>
+                                                @include('admin-views.partials._image-uploader', [
+                                                    'id' => 'delivery-overlay-icon-input',
+                                                    'name' => 'delivery_overlay_icon',
+                                                    'ratio' => '1:1',
+                                                    'isRequired' => false,
+                                                    'existingImage' => \App\CentralLogics\Helpers::get_full_url('business', $deliveryOverlayIcon?->value ?? '', $deliveryOverlayIcon?->storage[0]?->value ?? 'public', 'upload_image'),
                                                     'imageExtension' => IMAGE_EXTENSION,
                                                     'imageFormat' => IMAGE_FORMAT,
                                                     'maxSize' => MAX_FILE_SIZE,
