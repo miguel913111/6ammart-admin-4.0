@@ -8,9 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('reels')) {
-            return;
-        }
+        // Ensure a consistent schema on environments that have an older/ partial reels table.
+        Schema::dropIfExists('reel_engagements');
+        Schema::dropIfExists('reels');
 
         Schema::create('reels', function (Blueprint $table) {
             $table->id();
