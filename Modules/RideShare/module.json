@@ -1,0 +1,11 @@
+{
+    "name": "RideShare",
+    "alias": "rideshare",
+    "description": "Ride share module stub for compatibility.",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\RideShare\\Providers\\RideShareServiceProvider"
+    ],
+    "files": []
+}
