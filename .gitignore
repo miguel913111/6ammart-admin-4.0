@@ -40,3 +40,4 @@ Modules/Builder/resources/dist/build.zip
 /Documentation/
 Admin panel new install.zip
 installation/backup/*.sql
+webbridge-*
