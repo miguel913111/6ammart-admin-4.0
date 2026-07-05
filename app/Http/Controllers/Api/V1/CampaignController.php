@@ -15,18 +15,24 @@ class CampaignController extends Controller
     public function get_basic_campaigns(Request $request){
         Helpers::setZoneIds($request);
         $zone_id= $request->header('zoneId');
+        $is_global = $request->boolean('global');
         try {
             $campaigns = Campaign::
             whereHas('module.zones',function($query)use($zone_id){
                 $query->whereIn('zones.id', json_decode($zone_id, true));
             })
-            ->when(config('module.current_module_data'), function($query)use($zone_id){
+            ->when(config('module.current_module_data') && !$is_global, function($query)use($zone_id){
                 $query->module(config('module.current_module_data')['id']);
                 if(!config('module.current_module_data')['all_zone_service']) {
                     $query->whereHas('stores', function($q)use($zone_id){
                         $q->whereIn('zone_id', json_decode($zone_id, true));
                     });
                 }
+            })
+            ->when($is_global, function($query)use($zone_id){
+                $query->whereHas('stores', function($q)use($zone_id){
+                    $q->whereIn('zone_id', json_decode($zone_id, true));
+                });
             })
             ->running()->active()->get();
             $campaigns=Helpers::basic_campaign_data_formatting($campaigns, true);
@@ -78,6 +84,7 @@ class CampaignController extends Controller
     public function get_item_campaigns(Request $request){
         Helpers::setZoneIds($request);
         $zone_id= $request->header('zoneId');
+        $is_global = $request->boolean('global');
         $item_campaign_default_status = Helpers::get_business_settings('item_campaign_default_status') ??  1;
         $item_campaign_sort_by_general = Helpers::getPriorityList(name: 'item_campaign_sort_by_general', type: 'general');
         try {
@@ -85,8 +92,8 @@ class CampaignController extends Controller
             ->whereHas('module.zones', function($query)use($zone_id){
                 $query->whereIn('zones.id', json_decode($zone_id, true));
             })
-            ->whereHas('store', function($query)use($zone_id){
-                $query->Active()->when(config('module.current_module_data'), function($query){
+            ->whereHas('store', function($query)use($zone_id, $is_global){
+                $query->Active()->when(config('module.current_module_data') && !$is_global, function($query){
                     $query->where('module_id', config('module.current_module_data')['id'])->whereHas('zone.modules',function($query){
                         $query->where('modules.id', config('module.current_module_data')['id']);
                     });

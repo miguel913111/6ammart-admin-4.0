@@ -436,10 +436,11 @@ class ItemController extends Controller
 
     public function get_product(Request $request, $id)
     {
+        $is_global = $request->boolean('global');
         try {
             if ($request['campaign'] == 1) {
                 $item = ItemCampaign::active()
-                ->when(config('module.current_module_data'), function ($query) {
+                ->when(config('module.current_module_data') && !$is_global, function ($query) {
                         $query->module(config('module.current_module_data')['id']);
                     })
                     ->when(is_numeric($id), function ($qurey) use ($id) {
@@ -451,7 +452,7 @@ class ItemController extends Controller
                     ->first();
             } else {
                 $item = Item::withCount('whislists')->with(['tags', 'nutritions', 'allergies', 'reviews', 'reviews.customer'])->active()
-                    ->when(config('module.current_module_data'), function ($query) {
+                    ->when(config('module.current_module_data') && !$is_global, function ($query) {
                         $query->module(config('module.current_module_data')['id']);
                     })
                     ->when(is_numeric($id), function ($qurey) use ($id) {

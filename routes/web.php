@@ -16,6 +16,8 @@ use App\Http\Controllers\PaypalPaymentController;
 use App\Http\Controllers\StripePaymentController;
 use App\Http\Controllers\SslCommerzPaymentController;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\RiderRegistrationController;
 use App\Http\Controllers\StripeConnectOnboardingController;
 use App\Models\Order;
@@ -39,6 +41,228 @@ use Illuminate\Support\Facades\Artisan;
 
 
 Route::post('/subscribeToTopic', [FirebaseController::class, 'subscribeToTopic']);
+
+// Debug FCM routes (migrated from V3.8)
+Route::post('/debug/setup-fcm', function () {
+    $serviceFilePath = base_path('nexo-sixammart-prod-firebase-adminsdk-fbsvc-314c8ae993.json');
+    if (!file_exists($serviceFilePath)) {
+        return response()->json(['error' => 'Service file not found'], 404);
+    }
+    $content = json_decode(file_get_contents($serviceFilePath), true);
+    if (!$content) {
+        return response()->json(['error' => 'Invalid JSON'], 400);
+    }
+
+    $projectId = $content['project_id'] ?? null;
+
+    DB::table('business_settings')->updateOrInsert(
+        ['key' => 'push_notification_service_file_content'],
+        ['value' => json_encode($content), 'updated_at' => now(), 'created_at' => now()]
+    );
+
+    if ($projectId) {
+        DB::table('business_settings')->updateOrInsert(
+            ['key' => 'fcm_project_id'],
+            ['value' => $projectId, 'updated_at' => now(), 'created_at' => now()]
+        );
+    }
+
+    Cache::forget('business_settings_all_data');
+
+    return response()->json([
+        'message' => 'FCM service file configured',
+        'project_id' => $projectId,
+        'current_config' => Helpers::get_business_settings('push_notification_service_file_content'),
+    ]);
+})->name('debug.setup-fcm')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+Route::get('/debug/vendor-push/{store_id}', function ($store_id) {
+    $store = Store::with('vendor')->find($store_id);
+    if (!$store) {
+        return response()->json(['error' => 'Store not found'], 404);
+    }
+
+    $pushStatus = Helpers::getNotificationStatusData('store', 'store_order_notification', 'push_notification_status', $store_id);
+
+    $data = [
+        'title' => 'DEBUG: Test push',
+        'description' => 'This is a test push notification from backend debug route',
+        'order_id' => 0,
+        'module_id' => $store->module_id ?? '',
+        'order_type' => 'delivery',
+        'image' => '',
+        'type' => 'new_order',
+        'order_status' => 'pending',
+    ];
+
+    $topic = "store_panel_{$store_id}_message";
+    $helpersResult = Helpers::send_push_notif_to_topic($data, $topic, 'new_order', url('/') . '/vendor-panel/order/list/all');
+
+    // Manual FCM call to capture raw response
+    $config = Helpers::get_business_settings('push_notification_service_file_content');
+    $key = (array)$config;
+    $manualResult = null;
+    if (data_get($key, 'project_id')) {
+        $url = 'https://fcm.googleapis.com/v1/projects/' . $key['project_id'] . '/messages:send';
+        $headers = [
+            'Authorization' => 'Bearer ' . Helpers::getAccessToken($key),
+            'Content-Type' => 'application/json',
+        ];
+        $messagePayload = [
+            "topic" => $topic,
+            "data" => [
+                "title" => (string)$data['title'],
+                "body" => (string)$data['description'],
+                "order_id" => (string)$data['order_id'],
+                "order_type" => (string)$data['order_type'],
+                "type" => (string)$data['type'],
+                "image" => (string)$data['image'],
+                "module_id" => (string)$data['module_id'],
+                "click_action" => url('/') . '/vendor-panel/order/list/all',
+                "sound" => "notification.wav",
+                "order_status" => (string)$data['order_status'],
+            ],
+            "apns" => [
+                "payload" => [
+                    "aps" => [
+                        "sound" => "notification.wav",
+                        "content-available" => 1
+                    ]
+                ]
+            ]
+        ];
+        try {
+            $response = Http::withHeaders($headers)->post($url, ['message' => $messagePayload]);
+            $manualResult = [
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'successful' => $response->successful(),
+            ];
+        } catch (\Exception $e) {
+            $manualResult = [
+                'status' => 0,
+                'body' => $e->getMessage(),
+                'successful' => false,
+            ];
+        }
+    } else {
+        $manualResult = ['status' => 0, 'body' => 'No FCM project_id configured', 'successful' => false];
+    }
+
+    return response()->json([
+        'store_id' => $store_id,
+        'vendor_id' => $store->vendor_id,
+        'vendor_fcm_token' => $store->vendor->firebase_token ?? null,
+        'order_confirmation_model' => config('order_confirmation_model'),
+        'sub_self_delivery' => $store->sub_self_delivery,
+        'push_notification_status' => $pushStatus,
+        'topic' => $topic,
+        'helpers_result' => $helpersResult,
+        'manual_fcm_response' => $manualResult,
+    ]);
+})->name('debug.vendor-push')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+Route::get('/debug/vendor-push-device/{store_id}', function ($store_id) {
+    $store = Store::with('vendor')->find($store_id);
+    if (!$store || !$store->vendor || !$store->vendor->firebase_token) {
+        return response()->json(['error' => 'Store/vendor/token not found'], 404);
+    }
+
+    $token = $store->vendor->firebase_token;
+
+    $data = [
+        'title' => 'DEBUG: Direct token push',
+        'description' => 'This is a direct device token test push',
+        'order_id' => 0,
+        'module_id' => $store->module_id ?? '',
+        'order_type' => 'delivery',
+        'image' => '',
+        'type' => 'new_order',
+        'order_status' => 'pending',
+    ];
+
+    $config = Helpers::get_business_settings('push_notification_service_file_content');
+    $key = (array)$config;
+    $manualResult = null;
+    if (data_get($key, 'project_id')) {
+        $url = 'https://fcm.googleapis.com/v1/projects/' . $key['project_id'] . '/messages:send';
+        $headers = [
+            'Authorization' => 'Bearer ' . Helpers::getAccessToken($key),
+            'Content-Type' => 'application/json',
+        ];
+        $messagePayload = [
+            "token" => $token,
+            "data" => [
+                "title" => (string)$data['title'],
+                "body" => (string)$data['description'],
+                "order_id" => (string)$data['order_id'],
+                "order_type" => (string)$data['order_type'],
+                "type" => (string)$data['type'],
+                "image" => (string)$data['image'],
+                "module_id" => (string)$data['module_id'],
+                "click_action" => url('/') . '/vendor-panel/order/list/all',
+                "sound" => "notification.wav",
+                "order_status" => (string)$data['order_status'],
+            ],
+            "apns" => [
+                "payload" => [
+                    "aps" => [
+                        "sound" => "notification.wav",
+                        "content-available" => 1
+                    ]
+                ]
+            ]
+        ];
+        try {
+            $response = Http::withHeaders($headers)->post($url, ['message' => $messagePayload]);
+            $manualResult = [
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'successful' => $response->successful(),
+            ];
+        } catch (\Exception $e) {
+            $manualResult = [
+                'status' => 0,
+                'body' => $e->getMessage(),
+                'successful' => false,
+            ];
+        }
+    } else {
+        $manualResult = ['status' => 0, 'body' => 'No FCM project_id configured', 'successful' => false];
+    }
+
+    return response()->json([
+        'store_id' => $store_id,
+        'vendor_fcm_token' => $token,
+        'direct_token_push_result' => $manualResult,
+    ]);
+})->name('debug.vendor-push-device')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+Route::get('/debug/check-token-topics/{token}', function ($token) {
+    $config = Helpers::get_business_settings('push_notification_service_file_content');
+    $key = (array)$config;
+    if (!data_get($key, 'project_id')) {
+        return response()->json(['error' => 'No FCM project_id configured'], 500);
+    }
+
+    $accessToken = Helpers::getAccessToken($key);
+    try {
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $accessToken,
+        ])->get('https://iid.googleapis.com/iid/info/' . $token . '?details=true');
+
+        return response()->json([
+            'token' => $token,
+            'status' => $response->status(),
+            'body' => $response->json(),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'token' => $token,
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+})->name('debug.check-token-topics')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
 // Stripe Connect onboarding callbacks (used by mobile apps and partner payment account flows)
 Route::get('partner/payment-account/stripe_connect/return', [StripeConnectOnboardingController::class, 'return'])->name('stripe_connect.return');
