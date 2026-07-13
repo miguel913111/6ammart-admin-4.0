@@ -17,10 +17,10 @@ FROM php:8.2-fpm-alpine
 # Extensoes PHP necessarias (composer: curl, gd, json, simplexml, zip + Laravel)
 RUN apk add --no-cache \
         nginx bash curl gettext \
-        icu-libs libzip libpng libjpeg-turbo freetype oniguruma libcurl \
+        icu-libs libzip libpng libjpeg-turbo libwebp freetype oniguruma libcurl \
     && apk add --no-cache --virtual .build-deps \
-        icu-dev libzip-dev libpng-dev libjpeg-turbo-dev freetype-dev oniguruma-dev curl-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+        icu-dev libzip-dev libpng-dev libjpeg-turbo-dev libwebp-dev freetype-dev oniguruma-dev curl-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" \
         pdo_mysql mbstring gd zip bcmath intl exif opcache curl \
     && apk del .build-deps
