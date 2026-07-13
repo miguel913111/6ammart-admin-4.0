@@ -7,6 +7,10 @@ server {
 
     client_max_body_size 20M;
 
+    # Compatibilidade cPanel: views da landing page usam asset('/public/...')
+    # mas o docroot ja e /app/public -> remover o prefixo /public/
+    rewrite ^/public/(.*)$ /$1 last;
+
     # Logs para stdout/stderr (Railway recolhe-os)
     access_log /dev/stdout;
     error_log /dev/stderr warn;
